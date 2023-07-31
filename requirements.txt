@@ -1,0 +1,13 @@
+streamlit~=1.23.1
+langchain~=0.0.225
+utils~=1.0.1
+cohere~=4.11.2
+openai~=0.27.8
+pypdf2~=3.0.1
+Pillow~=9.0.0
+langchain~=0.0.231
+fpdf~=1.7.2
+pypdf~=3.12.1
+replicate~=0.8.3
+pyttsx3
+reportlab
