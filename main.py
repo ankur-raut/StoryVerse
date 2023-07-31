@@ -97,7 +97,7 @@ def story_generator(moral, element, outline, characters, choice):
     return out
 
 
-def image_generator(response, imagestyle, replicate_api_key):
+def image_generator(response, imagestyle, replicate_api_key,llm_name):
     temp = ""
     # data = json.loads(response)
     prompts = []
@@ -111,10 +111,12 @@ def image_generator(response, imagestyle, replicate_api_key):
         for key, value in scene_dict.items():
             if key.startswith("Prompt"):
                 prompts.append(value)
+    
     for scene_dict in response.scenes:
         for key, value in scene_dict.items():
             if key.startswith("NegetivePrompt"):
                 negPrompt.append(value)
+
     # for key, value in data['scenes'].items():
     #     if key.startswith("Prompt"):
     #         prompts.append(value)
@@ -131,12 +133,20 @@ def image_generator(response, imagestyle, replicate_api_key):
 
     os.environ["REPLICATE_API_TOKEN"] = replicate_api_key
 
-    for prompt,neg in zip(prompts,negPrompt):
-        book_url = replicate.run(
-            "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478",
-            input={"prompt": imgprefix + ' ' + prompt + ' ' + imgsuffix,"negative_prompt":neg}
-        )
-        temp = temp + book_url[0] + ";"
+    if(llm_name=='OpenAI'):    
+        for prompt,neg in zip(prompts,negPrompt):
+            book_url = replicate.run(
+                "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478",
+                input={"prompt": imgprefix + ' ' + prompt + ' ' + imgsuffix,"negative_prompt":neg}
+            )
+            temp = temp + book_url[0] + ";"
+    else:
+        for prompt in prompts:
+            book_url = replicate.run(
+                "stability-ai/stable-diffusion:27b93a2413e7f36cd83da926f3656280b2931564ff050bf9575f1fdf9bcd7478",
+                input={"prompt": imgprefix + ' ' + prompt + ' ' + imgsuffix}
+            )
+            temp = temp + book_url[0] + ";"
 
     return temp
 
@@ -218,7 +228,7 @@ if (submitted and api_key.startswith('4a')) or (submitted and api_key.startswith
         print(response)
         scenes_list = extract_scenes(response)
         # print("scenes list : " + scenes_list)
-        image_urls = image_generator(response, imagestyle_opt, replicate_api_key)
+        image_urls = image_generator(response, imagestyle_opt, replicate_api_key,llm_name)
         print("\n\n\nurls:")
         print(image_urls)
         append_to_file('pages/file.txt', scenes_list, image_urls)
